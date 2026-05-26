@@ -172,6 +172,8 @@ h1 {
 .field select,
 .field input,
 .price-box input {
+  width: 100%;
+  min-width: 0;
   height: 38px;
   border-radius: 7px;
   border: 1px solid #d8cec0;
@@ -337,13 +339,15 @@ h1 {
 .chart-frame {
   width: 100%;
   min-height: 300px;
+  padding-bottom: 4px;
 }
 
 .chart-legend {
   display: flex;
   justify-content: flex-end;
   gap: 14px;
-  margin-top: -4px;
+  margin-top: 12px;
+  padding-right: 10px;
   color: #7b7066;
   font-size: 12px;
 }
@@ -685,6 +689,10 @@ tr:last-child td {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .filter-strip .field:nth-child(3) {
+    grid-column: 1 / -1;
+  }
+
   .kpi-grid {
     display: grid;
   }
@@ -695,6 +703,10 @@ tr:last-child td {
   .kpi-grid,
   .settings-grid {
     grid-template-columns: 1fr;
+  }
+
+  .filter-strip .field:nth-child(3) {
+    grid-column: auto;
   }
 
   h1 {
