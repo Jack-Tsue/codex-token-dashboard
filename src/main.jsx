@@ -60,6 +60,11 @@ const usdFmt = new Intl.NumberFormat('en-US', {
   currency: 'USD',
   maximumFractionDigits: 2,
 });
+const usdAxisFmt = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  maximumFractionDigits: 0,
+});
 const cnyFmt = new Intl.NumberFormat('zh-CN', {
   style: 'currency',
   currency: 'CNY',
@@ -248,8 +253,8 @@ function App() {
       </section>
 
       <section className="split-grid">
-        <Panel className="model-panel" title="模型占比" meta="按 token 总量">
-          <ModelChart data={analytics.models} />
+        <Panel className="highlight-panel" title="高光时刻" meta="Usage highlights">
+          <HighlightGrid highlights={analytics.highlights} />
         </Panel>
         <Panel title="项目占比" meta="按 cwd 聚合">
           <RankList rows={analytics.projects} kind="project" />
@@ -257,8 +262,8 @@ function App() {
       </section>
 
       <section className="split-grid bottom-grid">
-        <Panel title="高峰记录" meta="Top days and sessions">
-          <PeakTable peaks={analytics.peaks} />
+        <Panel title="模型占比" meta="按 token 总量">
+          <ModelChart data={analytics.models} />
         </Panel>
         <Panel title="扫描状态" meta={`${raw?.fileCount || 0} 个文件，${raw?.eventCount || 0} 条 token 事件`}>
           <ScanStatus raw={raw} analytics={analytics} />
@@ -372,22 +377,34 @@ function TrendChart({ data }) {
   return (
     <div className="chart-frame">
       <ResponsiveContainer width="100%" height={300}>
-        <AreaChart data={data} margin={{ left: 4, right: 12, top: 10, bottom: 0 }}>
+        <AreaChart data={data} margin={{ left: 4, right: 16, top: 10, bottom: 0 }}>
           <defs>
             <linearGradient id="tokenFill" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#c96442" stopOpacity={0.42} />
               <stop offset="100%" stopColor="#c96442" stopOpacity={0.04} />
             </linearGradient>
+            <linearGradient id="costFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#b98b45" stopOpacity={0.34} />
+              <stop offset="100%" stopColor="#b98b45" stopOpacity={0.02} />
+            </linearGradient>
           </defs>
           <CartesianGrid stroke="#e4ddd2" vertical={false} />
           <XAxis dataKey="date" tick={{ fill: '#6f665c', fontSize: 12 }} tickMargin={10} />
-          <YAxis tickFormatter={(value) => compactFmt.format(value)} tick={{ fill: '#6f665c', fontSize: 12 }} width={56} />
+          <YAxis yAxisId="tokens" tickFormatter={(value) => compactFmt.format(value)} tick={{ fill: '#6f665c', fontSize: 12 }} width={56} />
+          <YAxis yAxisId="cost" orientation="right" tickFormatter={(value) => usdAxisFmt.format(value)} tick={{ fill: '#8b7046', fontSize: 12 }} width={48} />
           <Tooltip content={<ChartTooltip />} />
-          <Area type="monotone" dataKey="totalTokens" name="Total" stroke="#9f4d36" fill="url(#tokenFill)" strokeWidth={2.5} />
-          <Area type="monotone" dataKey="cachedInputTokens" name="Cached" stroke="#6d8b74" fill="transparent" strokeWidth={1.8} />
-          <Area type="monotone" dataKey="outputTokens" name="Output" stroke="#3f6574" fill="transparent" strokeWidth={1.8} />
+          <Area yAxisId="tokens" type="monotone" dataKey="totalTokens" name="Total" stroke="#9f4d36" fill="url(#tokenFill)" strokeWidth={2.5} />
+          <Area yAxisId="tokens" type="monotone" dataKey="cachedInputTokens" name="Cached" stroke="#6d8b74" fill="transparent" strokeWidth={1.8} />
+          <Area yAxisId="tokens" type="monotone" dataKey="outputTokens" name="Output" stroke="#3f6574" fill="transparent" strokeWidth={1.8} />
+          <Area yAxisId="cost" type="monotone" dataKey="costUsd" name="Cost" stroke="#b98b45" fill="url(#costFill)" strokeWidth={2} strokeDasharray="4 4" />
         </AreaChart>
       </ResponsiveContainer>
+      <div className="chart-legend">
+        <span><i style={{ background: '#9f4d36' }} />Token</span>
+        <span><i style={{ background: '#6d8b74' }} />Cached</span>
+        <span><i style={{ background: '#3f6574' }} />Output</span>
+        <span><i className="dash" style={{ background: '#b98b45' }} />Cost</span>
+      </div>
     </div>
   );
 }
@@ -423,10 +440,10 @@ function ChartTooltip({ active, payload, label }) {
       <strong>{label || row.model}</strong>
       {payload.map((item) => (
         <span key={item.dataKey}>
-          {item.name || item.dataKey}: {numberFmt.format(item.value || 0)}
+          {item.name || item.dataKey}: {formatTooltipValue(item.dataKey, item.value)}
         </span>
       ))}
-      {row.costUsd != null && <span>Cost: {usdFmt.format(row.costUsd)}</span>}
+      {row.costUsd != null && !payload.some((item) => item.dataKey === 'costUsd') && <span>Cost: {usdFmt.format(row.costUsd)}</span>}
     </div>
   );
 }
@@ -500,31 +517,16 @@ function RankList({ rows, kind }) {
   );
 }
 
-function PeakTable({ peaks }) {
-  const rows = [
-    ['最高用量日', peaks.topDay?.date, peaks.topDay?.totalTokens, peaks.topDay?.costUsd],
-    ['最高成本日', peaks.topCostDay?.date, peaks.topCostDay?.totalTokens, peaks.topCostDay?.costUsd],
-    ['最高会话', peaks.topSession?.sessionName, peaks.topSession?.totalTokens, peaks.topSession?.costUsd],
-    ['缓存最多会话', peaks.topCachedSession?.sessionName, peaks.topCachedSession?.cachedInputTokens, peaks.topCachedSession?.costUsd],
-  ];
-
+function HighlightGrid({ highlights }) {
   return (
-    <div className="table-wrap">
-      <table>
-        <thead>
-          <tr><th>指标</th><th>对象</th><th>Token</th><th>金额</th></tr>
-        </thead>
-        <tbody>
-          {rows.map(([label, target, tokens, cost]) => (
-            <tr key={label}>
-              <td>{label}</td>
-              <td>{target || '-'}</td>
-              <td>{tokens ? numberFmt.format(tokens) : '-'}</td>
-              <td>{cost != null ? usdFmt.format(cost) : '-'}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="highlight-grid">
+      {highlights.map((item) => (
+        <article className="highlight-card" key={item.label}>
+          <span>{item.label}</span>
+          <strong>{item.value}</strong>
+          <p>{item.detail}</p>
+        </article>
+      ))}
     </div>
   );
 }
@@ -621,8 +623,14 @@ function buildAnalytics(events, prices) {
   const days = [...daily.values()].sort((a, b) => a.date.localeCompare(b.date));
   const modelRows = withShares([...models.values()].sort((a, b) => b.totalTokens - a.totalTokens));
   const projectRows = withShares([...projects.values()].sort((a, b) => b.totalTokens - a.totalTokens));
-  const sessionRows = [...sessions.values()].sort((a, b) => b.totalTokens - a.totalTokens);
+  const sessionRows = withCacheRates([...sessions.values()]).sort((a, b) => b.totalTokens - a.totalTokens);
   const todayRow = daily.get(today) || emptyTotals({ date: today });
+  const topDay = maxBy(days, 'totalTokens');
+  const topCostDay = maxBy(days, 'costUsd');
+  const topSession = maxBy(sessionRows, 'totalTokens');
+  const topOutputDay = maxBy(days, 'outputTokens');
+  const topCacheRateSession = maxBy(sessionRows.filter((row) => row.inputTokens > 0), 'cacheRate');
+  const topProject = projectRows[0] || null;
 
   return {
     total,
@@ -634,11 +642,19 @@ function buildAnalytics(events, prices) {
     cacheRate: total.inputTokens ? total.cachedInputTokens / total.inputTokens : 0,
     averageDailyTokens: days.length ? total.totalTokens / days.length : 0,
     peaks: {
-      topDay: maxBy(days, 'totalTokens'),
-      topCostDay: maxBy(days, 'costUsd'),
-      topSession: maxBy(sessionRows, 'totalTokens'),
+      topDay,
+      topCostDay,
+      topSession,
       topCachedSession: maxBy(sessionRows, 'cachedInputTokens'),
     },
+    highlights: buildHighlights({
+      topDay,
+      topCostDay,
+      topSession,
+      topOutputDay,
+      topCacheRateSession,
+      topProject,
+    }),
   };
 }
 
@@ -687,8 +703,55 @@ function withShares(rows) {
   return rows.map((row) => ({ ...row, share: row.totalTokens / max }));
 }
 
+function withCacheRates(rows) {
+  return rows.map((row) => ({
+    ...row,
+    cacheRate: row.inputTokens ? row.cachedInputTokens / row.inputTokens : 0,
+  }));
+}
+
+function buildHighlights({ topDay, topCostDay, topSession, topOutputDay, topCacheRateSession, topProject }) {
+  return [
+    {
+      label: '最高用量日',
+      value: compactFmt.format(topDay?.totalTokens || 0),
+      detail: `${topDay?.date || '-'} · ${numberFmt.format(topDay?.totalTokens || 0)} tokens`,
+    },
+    {
+      label: '最高成本日',
+      value: usdFmt.format(topCostDay?.costUsd || 0),
+      detail: `${topCostDay?.date || '-'} · ${compactFmt.format(topCostDay?.totalTokens || 0)} tokens`,
+    },
+    {
+      label: '缓存命中最高会话',
+      value: `${Math.round((topCacheRateSession?.cacheRate || 0) * 100)}%`,
+      detail: `${topCacheRateSession?.sessionName || '-'} · ${compactFmt.format(topCacheRateSession?.cachedInputTokens || 0)} cached`,
+    },
+    {
+      label: '最高单会话',
+      value: compactFmt.format(topSession?.totalTokens || 0),
+      detail: `${topSession?.sessionName || '-'} · ${usdFmt.format(topSession?.costUsd || 0)}`,
+    },
+    {
+      label: '最高输出日',
+      value: compactFmt.format(topOutputDay?.outputTokens || 0),
+      detail: `${topOutputDay?.date || '-'} · output tokens`,
+    },
+    {
+      label: '最活跃项目',
+      value: topProject?.projectName || '-',
+      detail: `${compactFmt.format(topProject?.totalTokens || 0)} tokens · ${usdFmt.format(topProject?.costUsd || 0)}`,
+    },
+  ];
+}
+
 function maxBy(rows, field) {
   return rows.reduce((best, row) => (!best || row[field] > best[field] ? row : best), null);
+}
+
+function formatTooltipValue(dataKey, value) {
+  if (dataKey === 'costUsd') return usdFmt.format(value || 0);
+  return numberFmt.format(value || 0);
 }
 
 function buildHeatmapCells(days) {

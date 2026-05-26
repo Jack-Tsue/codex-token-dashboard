@@ -2,7 +2,7 @@
 
 A local web dashboard for visualizing Codex token usage from your `~/.codex` logs.
 
-It reads local Codex session files, aggregates `last_token_usage`, and shows daily trends, a calendar heatmap, project/session breakdowns, cache usage, and estimated API-equivalent cost.
+It reads local Codex session files, aggregates `last_token_usage`, and shows daily trends with separate token/cost axes, a calendar heatmap, project/session breakdowns, highlight moments, cache usage, and estimated API-equivalent cost.
 
 ## Quick Start
 

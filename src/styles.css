@@ -308,7 +308,7 @@ h1 {
   min-width: 0;
 }
 
-.model-panel {
+.highlight-panel {
   min-height: 404px;
   display: flex;
   flex-direction: column;
@@ -339,10 +339,35 @@ h1 {
   min-height: 300px;
 }
 
+.chart-legend {
+  display: flex;
+  justify-content: flex-end;
+  gap: 14px;
+  margin-top: -4px;
+  color: #7b7066;
+  font-size: 12px;
+}
+
+.chart-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.chart-legend i {
+  width: 16px;
+  height: 3px;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.chart-legend .dash {
+  background-image: repeating-linear-gradient(90deg, currentColor 0 5px, transparent 5px 9px);
+}
+
 .compact-chart {
-  flex: 1;
-  height: auto;
-  min-height: 328px;
+  height: 216px;
+  min-height: 216px;
 }
 
 .chart-tooltip {
@@ -446,6 +471,46 @@ h1 {
 .status-stack {
   display: grid;
   gap: 10px;
+}
+
+.highlight-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  flex: 1;
+}
+
+.highlight-card {
+  border: 1px solid #eadfd2;
+  border-radius: 8px;
+  background: #fffdf8;
+  padding: 14px;
+  display: grid;
+  align-content: space-between;
+  min-height: 106px;
+}
+
+.highlight-card span {
+  color: #8a7e72;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.highlight-card strong {
+  color: #2d2722;
+  font-family: ui-serif, Georgia, "Times New Roman", serif;
+  font-size: 28px;
+  line-height: 1.05;
+  margin: 10px 0 8px;
+  overflow-wrap: anywhere;
+}
+
+.highlight-card p {
+  color: #7d7369;
+  font-size: 12px;
+  line-height: 1.35;
+  margin: 0;
+  overflow-wrap: anywhere;
 }
 
 .rank-row {
