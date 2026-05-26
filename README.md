@@ -6,7 +6,13 @@ It reads local Codex session files, aggregates `last_token_usage`, and shows dai
 
 ## Quick Start
 
-Run directly from GitHub:
+Run from npm:
+
+```bash
+npx codex-token-dashboard
+```
+
+Or run directly from GitHub:
 
 ```bash
 npx github:Jack-Tsue/codex-token-dashboard

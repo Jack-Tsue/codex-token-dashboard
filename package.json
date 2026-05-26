@@ -1,11 +1,11 @@
 {
   "name": "codex-token-dashboard",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A local dashboard for visualizing Codex token usage from ~/.codex logs.",
   "license": "MIT",
   "type": "module",
   "bin": {
-    "codex-token-dashboard": "./bin/codex-token-dashboard.js"
+    "codex-token-dashboard": "bin/codex-token-dashboard.js"
   },
   "files": [
     "bin",
