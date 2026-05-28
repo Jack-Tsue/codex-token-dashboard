@@ -86,7 +86,7 @@ Codex logs may include project paths, session names, model names, and other meta
 
 ## Cost Estimates
 
-Cost is an estimate using OpenAI API-style pricing. It is not your Codex, ChatGPT, or Plus billing statement.
+Cost is an estimate using the OpenAI API standard processing prices published at <https://openai.com/api/pricing/>. It is not your Codex, ChatGPT, or Plus billing statement.
 
 The estimate uses:
 
@@ -98,7 +98,13 @@ uncached input * input price
 
 Reasoning output tokens are displayed as a detail and are not added a second time.
 
-Internal Codex model names are mapped to public Codex model pricing buckets in the UI settings. You can adjust the price table and USD/CNY exchange rate in the dashboard.
+Internal Codex model names are mapped to public GPT pricing buckets in the UI settings:
+
+- `gpt-5.5` -> GPT-5.5
+- `gpt-5.4`, `gpt-5.2`, `codex-auto-review` -> GPT-5.4
+- `gpt-5.4-mini`, `gpt-5.1-codex-mini` -> GPT-5.4 mini
+
+You can adjust the price table and USD/CNY exchange rate in the dashboard.
 
 ## Development
 

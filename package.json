@@ -1,6 +1,6 @@
 {
   "name": "codex-token-dashboard",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "A local dashboard for visualizing Codex token usage from ~/.codex logs.",
   "license": "MIT",
   "type": "module",

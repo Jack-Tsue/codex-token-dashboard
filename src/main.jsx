@@ -27,27 +27,33 @@ import {
 import './styles.css';
 
 const DEFAULT_PRICES = {
-  latestCodex: {
-    label: 'gpt-5.2-codex',
-    input: 1.75,
-    cached: 0.175,
-    output: 14,
+  gpt55: {
+    label: 'GPT-5.5',
+    input: 5,
+    cached: 0.5,
+    output: 30,
   },
-  miniCodex: {
-    label: 'gpt-5.1-codex-mini',
-    input: 0.25,
-    cached: 0.025,
-    output: 2,
+  gpt54: {
+    label: 'GPT-5.4',
+    input: 2.5,
+    cached: 0.25,
+    output: 15,
+  },
+  gpt54Mini: {
+    label: 'GPT-5.4 mini',
+    input: 0.75,
+    cached: 0.075,
+    output: 4.5,
   },
 };
 
 const MODEL_MAP = {
-  'gpt-5.5': 'latestCodex',
-  'gpt-5.4': 'latestCodex',
-  'gpt-5.2': 'latestCodex',
-  'codex-auto-review': 'latestCodex',
-  'gpt-5.1-codex-mini': 'miniCodex',
-  'gpt-5.4-mini': 'miniCodex',
+  'gpt-5.5': 'gpt55',
+  'gpt-5.4': 'gpt54',
+  'gpt-5.2': 'gpt54',
+  'codex-auto-review': 'gpt54',
+  'gpt-5.1-codex-mini': 'gpt54Mini',
+  'gpt-5.4-mini': 'gpt54Mini',
 };
 
 const numberFmt = new Intl.NumberFormat('zh-CN');
@@ -349,7 +355,7 @@ function SettingsPanel({ prices, setPrices, fxRate, setFxRate }) {
       <div>
         <h2>价格与映射</h2>
         <p>
-          官方价格按每 100 万 token 计算。内部模型名映射为估算口径，可在这里调整。
+          官方价格按标准处理模式、每 100 万 token 计算。内部模型名映射为估算口径，可在这里调整。
         </p>
       </div>
       <div className="settings-grid">
@@ -363,8 +369,9 @@ function SettingsPanel({ prices, setPrices, fxRate, setFxRate }) {
         ))}
         <div className="price-box mapping-box">
           <strong>模型映射</strong>
-          <p>gpt-5.5 / gpt-5.4 / gpt-5.2 / codex-auto-review → gpt-5.2-codex</p>
-          <p>gpt-5.1-codex-mini / gpt-5.4-mini → mini</p>
+          <p>gpt-5.5 → GPT-5.5</p>
+          <p>gpt-5.4 / gpt-5.2 / codex-auto-review → GPT-5.4</p>
+          <p>gpt-5.1-codex-mini / gpt-5.4-mini → GPT-5.4 mini</p>
           <label>USD → CNY <input value={fxRate} type="number" step="0.01" onChange={(event) => setFxRate(Number(event.target.value || 0))} /></label>
         </div>
       </div>
@@ -659,8 +666,8 @@ function buildAnalytics(events, prices) {
 }
 
 function estimateCost(event, prices) {
-  const priceKey = MODEL_MAP[event.model] || 'latestCodex';
-  const price = prices[priceKey] || prices.latestCodex;
+  const priceKey = MODEL_MAP[event.model] || 'gpt54';
+  const price = prices[priceKey] || prices.gpt54;
   return (
     (event.uncachedInputTokens / 1_000_000) * price.input +
     (event.cachedInputTokens / 1_000_000) * price.cached +
